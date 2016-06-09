@@ -28,7 +28,9 @@ that works with this product demo.
 ### Setup Arduino IDE and Libraries
 0. Install Arduino [arduino.cc](https://www.arduino.cc/en/Main/Software)
 1. Install ESP8266 Thing Dev Board support using Arduino Board Manager - [ESP8266 Thing Dev Board Install Directions ](https://learn.sparkfun.com/tutorials/esp8266-thing-hookup-guide/installing-the-esp8266-arduino-addon)
-2. Install Exosite Arduino Library - Use Arduino Library Manager, search for `Exosite` [Exosite Arduino Library Details](https://github.com/exosite-garage/arduino_exosite_library)
+2. Install Exosite Arduino Library - Use Arduino Library Manager, search for `Exosite`
+   _More info: [Exosite Arduino Library Details](https://github.com/exosite-garage/arduino_exosite_library)_
+   ![search exosite](assets/library_manager.png)
    ![search exosite](assets/search_for_exosite.png)
 3. Install [Adafruit DHT Library](https://github.com/adafruit/DHT-sensor-library) - You can use Arduino Library Manager, search for `DHT`
 4. Install [DHT Sensor Library](https://github.com/adafruit/DHT-sensor-library) - You can use Arduino Library Manager, search for `DHT`
