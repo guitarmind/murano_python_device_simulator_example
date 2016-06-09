@@ -29,7 +29,12 @@ that works with this product demo.
 0. Install Arduino [arduino.cc](https://www.arduino.cc/en/Main/Software)
 1. Install ESP8266 Thing Dev Board support using Arduino Board Manager - [ESP8266 Thing Dev Board Install Directions ](https://learn.sparkfun.com/tutorials/esp8266-thing-hookup-guide/installing-the-esp8266-arduino-addon)
 2. Install Exosite Arduino Library - Use Arduino Library Manager, search for `Exosite` [Exosite Arduino Library Details](https://github.com/exosite-garage/arduino_exosite_library)
-3. Install [Adafruit DHT Library](https://github.com/adafruit/DHT-sensor-library) - You can use Arduino Library Manager, search for `Adafruit DHT unified`
+   ![search exosite](assets/search_for_exosite.png)
+3. Install [Adafruit DHT Library](https://github.com/adafruit/DHT-sensor-library) - You can use Arduino Library Manager, search for `DHT`
+4. Install [DHT Sensor Library](https://github.com/adafruit/DHT-sensor-library) - You can use Arduino Library Manager, search for `DHT`
+   ![search exosite](assets/search_for_dht.png)
+
+
 
 ### NEW TO ARDUINO?
 _Arduino is a powerful software platform for quickly building applications on embedded hardware.  Although typically easier than most any other software IDEs and compilers, it can still be a learning experience for new users. Once installed quickly with the necessary libraries, users will find they can customize and build applications in minutes.  Here are a few links to get an understanding of Arduino since this guide does not cover every concept of the Arduino IDE and hardware concepts (in this case the SparkFun ESP8266 Thing Dev Board) Note that Arduino supports a number of hardware platforms, not just Arduino branded boards themselves, like the ESP8266 Thing Dev Board._
