@@ -88,7 +88,6 @@ __New to Arduino?__
 9. Copy Device Identifier (MAC Address) from the Serial Monitor Output.  
    ![compile download](assets/run_debug_get_unique_identifier.png)
    _(You can click the Autoscroll if the log window goes past the top)_
-   ![autoscroll](assets/autscroll_check_box.png)
 
 ### Add Device to Murano Product
 1. Add Device to Product in Murano using the Device Identifier (MAC Address)
