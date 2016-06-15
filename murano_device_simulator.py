@@ -21,6 +21,7 @@
 # 
 
 import time
+import datetime
 import random
 from pprint import pprint
 import json
@@ -75,6 +76,7 @@ uptime = 0
 connected = True
 last_request = 0
 start_time = 0
+last_modified = {}
 
 #
 # DEVICE MURANO RELATED FUNCTIONS
@@ -242,7 +244,8 @@ def LONG_POLL_WAIT(READ_PARAMS):
 			http_packet = http_packet + 'Accept: application/x-www-form-urlencoded; charset=utf-8\r\n'
 			http_packet = http_packet + 'X-EXOSITE-CIK: '+cik+'\r\n'
 			http_packet = http_packet + 'Request-Timeout: ' + str(LONG_POLL_REQUEST_TIMEOUT) + '\r\n'
-			#http_packet = http_packet + 'If-Modified-Since:: ' + last_modified_timestamp + '\r\n'
+			if last_modified.get(READ_PARAMS) != None:
+				http_packet = http_packet + 'If-Modified-Since: ' + last_modified.get(READ_PARAMS) + '\r\n'
 			http_packet = http_packet + '\r\n'
 
 			response = SOCKET_SEND(http_packet)
@@ -250,6 +253,12 @@ def LONG_POLL_WAIT(READ_PARAMS):
 			# HANDLE POSSIBLE RESPONSES
 			if response.status == 200:
 				#print 'read success'
+				if response.getheader("last-modified") != None:
+					# Save Last-Modified Header (Plus 1s)
+					lm = response.getheader("last-modified")
+					next_lm = (datetime.datetime.strptime(lm , "%a, %d %b %Y %H:%M:%S GMT")
+						      + datetime.timedelta(seconds=1)).strftime("%a, %d %b %Y %H:%M:%S GMT")
+					last_modified[READ_PARAMS] = next_lm
 				return True,response.read()
 			elif response.status == 304:
 				#print '304: No Change'
