@@ -21,6 +21,7 @@
 # 
 
 import time
+import datetime
 import random
 from pprint import pprint
 import json
@@ -253,7 +254,11 @@ def LONG_POLL_WAIT(READ_PARAMS):
 			if response.status == 200:
 				#print 'read success'
 				if response.getheader("last-modified") != None:
-					last_modified[READ_PARAMS] = response.getheader("last-modified")
+					# Save Last-Modified Header (Plus 1s)
+					lm = response.getheader("last-modified")
+					next_lm = (datetime.datetime.strptime(lm , "%a, %d %b %Y %H:%M:%S GMT")
+						      + datetime.timedelta(seconds=1)).strftime("%a, %d %b %Y %H:%M:%S GMT")
+					last_modified[READ_PARAMS] = next_lm
 				return True,response.read()
 			elif response.status == 304:
 				#print '304: No Change'
