@@ -1,4 +1,5 @@
 # Murano Getting Started Example Projects
 
-## Product Examples
-*[Sparkfun ESP8266 Thing Dev Board - Murano Smart Lightbulb](products/esp8266_thingdev_murano_smart_lightbulb)
+All examples are documented in the [Murano Getting Started Guides](http://beta-docs.exosite.com/murano/get-started/).  
+
+
