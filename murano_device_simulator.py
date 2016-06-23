@@ -294,6 +294,12 @@ def LONG_POLL_WAIT(READ_PARAMS):
 if PROMPT_FOR_PRODUCTID_AND_SN == True or productid=='YOUR_PRODUCT_ID_HERE':
 	print'Check for Device Parameters Enabled (hit return after each question)'
 	productid = raw_input("Enter the Murano Product ID: ")
+	host_address = productid+'.m2-dev.exosite.com'
+
+	print 'The default Host Address is: '+ host_address
+	hostok = raw_input("If OK, hit return, if you prefer a different host address, type it here: ")
+	if hostok != "":
+		host_address = hostok
 
 	print 'The default Device Identity is: '+ identifier
 	identityok = raw_input("If OK, hit return, if you prefer a different Identity, type it here: ")
@@ -305,6 +311,7 @@ print '\r\n-----'
 print 'Murano Example Smart Lightbulb Device Simulator booting...'
 print 'Product Id: '+ productid
 print 'Device Identity: '+ identifier
+print 'Product Unique Host: '+ host_address
 print '-----'
 cik = GET_STORED_CIK()
 if cik == None:
