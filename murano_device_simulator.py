@@ -57,7 +57,7 @@ LONG_POLL_REQUEST_TIMEOUT = 2*1000 #in milliseconds
 # ---- SHOULD NOT NEED TO CHANGE ANYTHING BELOW THIS LINE ------
 # -----------------------------------------------------------------
 
-host_address = productid+'.m2-dev.exosite.com'
+host_address = productid+'.m2.exosite.com'
 https_port = 443
 
 class FakeSocket():
