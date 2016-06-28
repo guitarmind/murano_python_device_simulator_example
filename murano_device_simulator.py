@@ -294,7 +294,7 @@ def LONG_POLL_WAIT(READ_PARAMS):
 if PROMPT_FOR_PRODUCTID_AND_SN == True or productid=='YOUR_PRODUCT_ID_HERE':
 	print'Check for Device Parameters Enabled (hit return after each question)'
 	productid = raw_input("Enter the Murano Product ID: ")
-	host_address = productid+'.m2-dev.exosite.com'
+	host_address = productid+'.m2.exosite.com'
 
 	print 'The default Host Address is: '+ host_address
 	hostok = raw_input("If OK, hit return, if you prefer a different host address, type it here: ")
