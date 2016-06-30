@@ -367,17 +367,17 @@ while LOOP:
 		connection = "Not Connected"
 	
 
-	output_string = ("Connection: {0:s}, Run Time: {1:5d}, Temperature: {2:3.2f} F, Humidity: {3:3.2f} %, Light State: {4:1d}").format(connection,uptime, temperature, humidity,lightbulb_state)
+	output_string = ("Connection: {0:s}, Run Time: {1:5d}, Temperature: {2:3.1f} F, Humidity: {3:3.1f} %, Light State: {4:1d}").format(connection,uptime, temperature, humidity,lightbulb_state)
 	print (output_string)
 	
 	if cik != None and FLAG_CHECK_ACTIVATION != True:
 		# GENERATE RANDOM TEMPERATURE VALUE
 
-		temperature = random.uniform(temperature-0.2,temperature+0.2)
+		temperature = round(random.uniform(temperature-0.2,temperature+0.2), 1)
 		if temperature > 120: temperature = 120
 		if temperature < 1: temperature = 1
 		# GENERATE RANDOM HUMIDITY VALUE
-		humidity = random.uniform(humidity-0.2,humidity+0.2)
+		humidity = round(random.uniform(humidity-0.2,humidity+0.2), 1)
 		if humidity > 100: humidity = 100
 		if humidity < 1: humidity = 1
 		
