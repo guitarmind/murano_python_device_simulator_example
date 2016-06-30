@@ -109,7 +109,7 @@ def SOCKET_SEND(http_packet):
 
 def ACTIVATE():
 		try:
-			print ('attempt to activate on Murano')
+			#print ('attempt to activate on Murano')
 
 			http_body = 'vendor='+productid+'&model='+productid+'&sn='+identifier
 			# BUILD HTTP PACKET 
@@ -204,7 +204,7 @@ def WRITE(WRITE_PARAMS):
 
 def READ(READ_PARAMS):
 		try:
-			print ('read data from Murano')
+			#print ('read data from Murano')
 
 			# BUILD HTTP PACKET 
 			http_packet = ""
@@ -301,10 +301,11 @@ if PROMPT_FOR_PRODUCTID_AND_SN == True or productid=='YOUR_PRODUCT_ID_HERE':
 	productid = input("Enter the Murano Product ID: ")
 	host_address = productid+'.m2.exosite.com'
 
-	print ('The default Host Address is: '+ host_address)
-	hostok = input("If OK, hit return, if you prefer a different host address, type it here: ")
-	if hostok != "":
-		host_address = hostok
+
+	print ('The Host Address is: '+ host_address)
+	#hostok = input("If OK, hit return, if you prefer a different host address, type it here: ")
+	#if hostok != "":
+	#	host_address = hostok
 
 	print ('The default Device Identity is: '+ identifier)
 	identityok = input("If OK, hit return, if you prefer a different Identity, type it here: ")
@@ -337,62 +338,74 @@ print ('starting main looop')
 counter = 100 #for debug purposes so you don't have issues killing this process
 LOOP = True
 lightbulb_state = 0
+init = 1
+
+# Check current system expected state
+status,resp = READ('state')
+if status == False and resp == 401:
+	FLAG_CHECK_ACTIVATION = True
+if status == False and resp == 304:
+	#print('No New State Value')
+	pass
+if status == True:
+	new_value = resp.split('=')
+	lightbulb_state = int(new_value[1])
+	if lightbulb_state == 1:
+		print ('Light Bulb is On')
+	else:
+		print ('Light Bulb is Off')
+
 
 while LOOP:
 	uptime = int(time.time()) - start_time
-	#if time.time() - last_request > REQUEST_LOOP_INTERVAL:
+	last_request = time.time()
 
-	if (uptime%10) == 0:
-		print ('---')
-		print ('Application: Running - Run Time: ' + str(uptime) + ' sec')
-		if lightbulb_state == '1':
-			print ('Light Bulb: On')
-		else:
-			print ('Light Bulb: Off')
+	output_string = '.'
+	
+	connection = 'Connected'
+	if FLAG_CHECK_ACTIVATION == True:
+		connection = "Not Connected"
+	
 
-	if True:
-		last_request = time.time()
-		if cik != None and FLAG_CHECK_ACTIVATION != True:
-			# GENERATE RANDOM TEMPERATURE VALUE
-			temperature = random.randint(temperature-1,temperature+1)
-			if temperature > 120: temperature = 120
-			if temperature < 1: temperature = 1
-			# GENERATE RANDOM HUMIDITY VALUE
-			humidity = random.randint(humidity-1,humidity+1)
-			if humidity > 100: humidity = 100
-			if humidity < 1: humidity = 1
-			
-			#print('Write Sensor Data')
-			status,resp = WRITE('temperature='+str(temperature)+'&humidity='+str(humidity)+'&uptime='+str(uptime))
-			if status == False and resp == 401:
-				FLAG_CHECK_ACTIVATION = True
-			
-			#print('Look for on/off state change')
-			status,resp = LONG_POLL_WAIT('state')
-			if status == False and resp == 401:
-				FLAG_CHECK_ACTIVATION = True
-			if status == False and resp == 304:
-				#print('No New State Value')
-				pass
-			if status == True:
-				print('New State Value:' + str(resp))
-				new_value = resp.split('=')
+	output_string = ("Connection: {0:s}, Run Time: {1:5d}, Temperature: {2:3.2f} F, Humidity: {3:3.2f} %, Light State: {4:1d}").format(connection,uptime, temperature, humidity,lightbulb_state)
+	print (output_string)
+	
+	if cik != None and FLAG_CHECK_ACTIVATION != True:
+		# GENERATE RANDOM TEMPERATURE VALUE
 
-				if lightbulb_state != new_value[1]:
-					lightbulb_state = new_value[1]
-					if new_value[1] == '1':
-						print ('Turn Light Bulb On')
-					else:
-						print ('Turn Light Bulb Off')
-			
-			if FLAG_CHECK_ACTIVATION == True:
-				print('ACTIVATION STATE: NOT ACTIVATED')
-			#else:
-			#	print('ACTIVATION STATE: ACTIVATED')
+		temperature = random.uniform(temperature-0.2,temperature+0.2)
+		if temperature > 120: temperature = 120
+		if temperature < 1: temperature = 1
+		# GENERATE RANDOM HUMIDITY VALUE
+		humidity = random.uniform(humidity-0.2,humidity+0.2)
+		if humidity > 100: humidity = 100
+		if humidity < 1: humidity = 1
+		
+		status,resp = WRITE('temperature='+str(temperature)+'&humidity='+str(humidity)+'&uptime='+str(uptime))
+		if status == False and resp == 401:
+			FLAG_CHECK_ACTIVATION = True
+		
+		#print('Look for on/off state change')
+		status,resp = LONG_POLL_WAIT('state')
+		if status == False and resp == 401:
+			FLAG_CHECK_ACTIVATION = True
+		if status == False and resp == 304:
+			#print('No New State Value')
+			pass
+		if status == True:
+			#print('New State Value:' + str(resp))
+			new_value = resp.split('=')
 
+			if lightbulb_state != int(new_value[1]):
+				lightbulb_state = int(new_value[1])
+				if lightbulb_state== 1:
+					print ('Action -> Turn Light Bulb On')
+				else:
+					print ('Action -> Turn Light Bulb Off')
+	
 	if FLAG_CHECK_ACTIVATION == True:
 		if (uptime%10) == 0:
-			print ('---')
+			#print ('---')
 			print ('Device CIK may be expired or not available (not added to product) - trying to activate')
 		act_response = ACTIVATE()
 		if act_response != None:
