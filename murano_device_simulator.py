@@ -1,25 +1,28 @@
-# 
-# Murano Python Simple Device Simulator 
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Murano Python Simple Device Simulator
 # Copyright 2016 Exosite
 # Version 1.0
-# 
-# This python script simulates a Smart Light bulb by generating simlulated 
+#
+# This python script simulates a Smart Light bulb by generating simlulated
 # sensor data and taking action on a remote state variable to control on/off.
-# It is written to work with the Murano example Smart Light Bulb Consumer example 
+# It is written to work with the Murano example Smart Light Bulb Consumer example
 # application.
-# 
+#
 # For more information see: http://beta-docs.exosite.com/murano/get-started
-# 
-# Requires: 
-# - Tested with: Python 2.6 or Python 2.7 
+#
+# Requires:
+# - Tested with: Python 2.6 or Python 2.7
 # - A basic knowledge of running Python scripts
-# 
+#
 # To run:
-# Option 1: From computer with Python installed, run command:  python murano_device_simulator.py 
-# Option 2: Any machine with Python isntalled, double-click on murano_device_simulator.py to launch 
+# Option 1: From computer with Python installed, run command:  python murano_device_simulator.py
+# Option 2: Any machine with Python isntalled, double-click on murano_device_simulator.py to launch
 # the Python IDE, which you can then run this script in.
-# 
+#
 
+import os
 import time
 import datetime
 import random
@@ -30,7 +33,7 @@ import socket
 import sys
 import ssl
 
-import urllib 
+import urllib
 try:
     from StringIO import StringIO
     import httplib
@@ -44,11 +47,12 @@ except ImportError:
 # -----------------------------------------------------------------
 # EXOSITE PRODUCT ID / SERIAL NUMBER IDENTIFIER / CONFIGURATION
 # -----------------------------------------------------------------
-productid = 'YOUR_PRODUCT_ID_HERE' 
-identifier = '000001' #default identifier
+UNSET_PRODUCT_ID='YOUR_PRODUCT_ID_HERE'
+productid = os.getenv('SIMULATOR_PRODUCT_ID', UNSET_PRODUCT_ID)
+identifier = os.getenv('SIMULATOR_DEVICE_ID', '000001') # default identifier
 
 SHOW_HTTP_REQUESTS = False
-PROMPT_FOR_PRODUCTID_AND_SN = True
+PROMPT_FOR_PRODUCTID_AND_SN = os.getenv('SIMULATOR_SHOULD_PROMPT', '1') == '1'
 AUTO_STOP = True # set to False to keep running indefinitely - this is a safety feature for new devs
 LONG_POLL_REQUEST_TIMEOUT = 2*1000 #in milliseconds
 
@@ -57,7 +61,8 @@ LONG_POLL_REQUEST_TIMEOUT = 2*1000 #in milliseconds
 # ---- SHOULD NOT NEED TO CHANGE ANYTHING BELOW THIS LINE ------
 # -----------------------------------------------------------------
 
-host_address = productid+'.m2.exosite.com'
+host_address_base = os.getenv('SIMULATOR_HOST', 'm2.exosite.com')
+host_address = None  # set this later when we know the product ID
 https_port = 443
 
 class FakeSocket():
@@ -112,7 +117,7 @@ def ACTIVATE():
 			#print ('attempt to activate on Murano')
 
 			http_body = 'vendor='+productid+'&model='+productid+'&sn='+identifier
-			# BUILD HTTP PACKET 
+			# BUILD HTTP PACKET
 			http_packet = ""
 			http_packet = http_packet + 'POST /provision/activate HTTP/1.1\r\n'
 			http_packet = http_packet + 'Host: '+host_address+'\r\n'
@@ -161,13 +166,12 @@ def STORE_CIK(cik_to_store):
 		f.close()
 		return True
 
-
 def WRITE(WRITE_PARAMS):
 #		try:
 			#print 'write data to Murano'
 
 			http_body = WRITE_PARAMS
-			# BUILD HTTP PACKET 
+			# BUILD HTTP PACKET
 			http_packet = ""
 			http_packet = http_packet + 'POST /onep:v1/stack/alias HTTP/1.1\r\n'
 			http_packet = http_packet + 'Host: '+host_address+'\r\n'
@@ -192,7 +196,7 @@ def WRITE(WRITE_PARAMS):
 				return False,400
 			elif response.status == 405:
 				print ('405: Bad Method')
-				return False,405		
+				return False,405
 			else:
 				print (str(response.status), response.reason, 'failed:')
 				return False,response.status
@@ -206,7 +210,7 @@ def READ(READ_PARAMS):
 		try:
 			#print ('read data from Murano')
 
-			# BUILD HTTP PACKET 
+			# BUILD HTTP PACKET
 			http_packet = ""
 			http_packet = http_packet + 'GET /onep:v1/stack/alias?'+READ_PARAMS+' HTTP/1.1\r\n'
 			http_packet = http_packet + 'Host: '+host_address+'\r\n'
@@ -229,7 +233,7 @@ def READ(READ_PARAMS):
 				return False,400
 			elif response.status == 405:
 				print ('405: Bad Method')
-				return False,405		
+				return False,405
 			else:
 				print (str(response.status), response.reason, 'failed:')
 				return False,response.status
@@ -242,7 +246,7 @@ def READ(READ_PARAMS):
 def LONG_POLL_WAIT(READ_PARAMS):
 		try:
 			#print 'long poll state wait request from Murano'
-			# BUILD HTTP PACKET 
+			# BUILD HTTP PACKET
 			http_packet = ""
 			http_packet = http_packet + 'GET /onep:v1/stack/alias?'+READ_PARAMS+' HTTP/1.1\r\n'
 			http_packet = http_packet + 'Host: '+host_address+'\r\n'
@@ -267,7 +271,7 @@ def LONG_POLL_WAIT(READ_PARAMS):
 				return True,response.read()
 			elif response.status == 304:
 				#print '304: No Change'
-				return False,304			
+				return False,304
 			elif response.status == 401:
 				print ('401: Bad Auth, CIK may be bad')
 				return False,401
@@ -276,7 +280,7 @@ def LONG_POLL_WAIT(READ_PARAMS):
 				return False,400
 			elif response.status == 405:
 				print ('405: Bad Method')
-				return False,405		
+				return False,405
 			else:
 				print (str(response.status), response.reason)
 				return False,response.status
@@ -287,7 +291,7 @@ def LONG_POLL_WAIT(READ_PARAMS):
 		return False,'function exception'
 
 # --------------------------
-# APPLICATION STARTS RUNNING HERE 
+# APPLICATION STARTS RUNNING HERE
 # --------------------------
 
 
@@ -296,11 +300,10 @@ def LONG_POLL_WAIT(READ_PARAMS):
 # --------------------------
 
 #Check if CIK locally stored already
-if PROMPT_FOR_PRODUCTID_AND_SN == True or productid=='YOUR_PRODUCT_ID_HERE':
+if PROMPT_FOR_PRODUCTID_AND_SN == True or productid==UNSET_PRODUCT_ID:
 	print ('Check for Device Parameters Enabled (hit return after each question)')
 	productid = input("Enter the Murano Product ID: ")
-	host_address = productid+'.m2.exosite.com'
-
+	host_address = productid + '.' + host_address_base
 
 	print ('The Host Address is: '+ host_address)
 	#hostok = input("If OK, hit return, if you prefer a different host address, type it here: ")
@@ -311,6 +314,8 @@ if PROMPT_FOR_PRODUCTID_AND_SN == True or productid=='YOUR_PRODUCT_ID_HERE':
 	identityok = input("If OK, hit return, if you prefer a different Identity, type it here: ")
 	if identityok != "":
 		identifier = identityok
+else:
+	host_address = productid + '.' + host_address_base
 
 start_time = int(time.time())
 print ('\r\n-----')
@@ -333,7 +338,7 @@ if cik == None:
 # --------------------------
 # MAIN LOOP
 # --------------------------
-print ('starting main looop')
+print ('starting main loop')
 
 counter = 100 #for debug purposes so you don't have issues killing this process
 LOOP = True
@@ -361,15 +366,15 @@ while LOOP:
 	last_request = time.time()
 
 	output_string = '.'
-	
+
 	connection = 'Connected'
 	if FLAG_CHECK_ACTIVATION == True:
 		connection = "Not Connected"
-	
+
 
 	output_string = ("Connection: {0:s}, Run Time: {1:5d}, Temperature: {2:3.1f} F, Humidity: {3:3.1f} %, Light State: {4:1d}").format(connection,uptime, temperature, humidity,lightbulb_state)
 	print (output_string)
-	
+
 	if cik != None and FLAG_CHECK_ACTIVATION != True:
 		# GENERATE RANDOM TEMPERATURE VALUE
 
@@ -380,11 +385,11 @@ while LOOP:
 		humidity = round(random.uniform(humidity-0.2,humidity+0.2), 1)
 		if humidity > 100: humidity = 100
 		if humidity < 1: humidity = 1
-		
+
 		status,resp = WRITE('temperature='+str(temperature)+'&humidity='+str(humidity)+'&uptime='+str(uptime))
 		if status == False and resp == 401:
 			FLAG_CHECK_ACTIVATION = True
-		
+
 		#print('Look for on/off state change')
 		status,resp = LONG_POLL_WAIT('state')
 		if status == False and resp == 401:
@@ -402,7 +407,7 @@ while LOOP:
 					print ('Action -> Turn Light Bulb On')
 				else:
 					print ('Action -> Turn Light Bulb Off')
-	
+
 	if FLAG_CHECK_ACTIVATION == True:
 		if (uptime%10) == 0:
 			#print ('---')
