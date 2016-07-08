@@ -95,7 +95,7 @@ def SOCKET_SEND(http_packet):
     ssl_s = ssl.wrap_socket(s)
     ssl_s.connect((host_address, https_port))
     if SHOW_HTTP_REQUESTS:
-        print('--- Sending ---\r\n' + http_packet + '\r\n----')
+        print("--- Sending ---\r\n {} \r\n----".format(http_packet))
     if PYTHON == 2:
         ssl_s.send(http_packet)
     else:
@@ -104,7 +104,7 @@ def SOCKET_SEND(http_packet):
     response = ssl_s.recv(1024)
     ssl_s.close()
     if SHOW_HTTP_REQUESTS:
-        print('--- Response --- \r\n' + str(response) + '\r\n---')
+        print("--- Response --- \r\n {} \r\n---")
 
     # PARSE REPONSE
     fake_socket_response = FakeSocket(response)
@@ -115,7 +115,7 @@ def SOCKET_SEND(http_packet):
 
 def ACTIVATE():
     try:
-        # print('attempt to activate on Murano')
+        # print("attempt to activate on Murano")
 
         http_body = 'vendor=' + productid + '&model=' + productid + '&sn=' + identifier
         # BUILD HTTP PACKET
@@ -133,37 +133,40 @@ def ACTIVATE():
         # HANDLE POSSIBLE RESPONSES
         if response.status == 200:
             new_cik = response.read()
-            print('Activation Response: New CIK:' + new_cik[0:10] + '..............................')
+            print("Activation Response: New CIK: {} ..............................".format(new_cik[0:10]))
             return new_cik
         elif response.status == 409:
-            print('Activation Response: Device Aleady Activated, there is no new CIK')
+            print("Activation Response: Device Aleady Activated, there is no new CIK")
         elif response.status == 404:
-            print('Activation Response: Device Identity (' + identifier + ') activation not available or check Product Id (' + productid + ')')
+            print("Activation Response: Device Identity ({}) activation not available or check Product Id ({})".format(
+                identifier,
+                productid
+                ))
         else:
-            print('Activation Response: failed request: ', str(response.status), response.reason)
+            print("Activation Response: failed request: {} {}".format(str(response.status), response.reason))
             return None
 
-    except Exception as err:
+    except Exception as e:
         # pass
-        print('exeception: ' + str(err))
+        print("Exception: {}".format(e))
     return None
 
 
 def GET_STORED_CIK():
-    print('get stored CIK from non-volatile memory')
+    print("get stored CIK from non-volatile memory")
     try:
         f = open(productid + "_" + identifier + "_cik", "r+")  # opens file to store CIK
         local_cik = f.read()
         f.close()
-        print('stored cik: ' + local_cik[0:10] + '..............................')
+        print("Stored cik: {} ..............................".format(local_cik[0:10]))
         return local_cik
     except Exception as e:
-        print('problem getting stored CIK')
+        print("Problem getting stored CIK: {}".format(e))
         return None
 
 
 def STORE_CIK(cik_to_store):
-    print('storing new CIK to non-volatile memory')
+    print("storing new CIK to non-volatile memory")
     f = open(productid + "_" + identifier + "_cik", "w")  # opens file that stores CIK
     f.write(cik_to_store)
     f.close()
@@ -171,7 +174,7 @@ def STORE_CIK(cik_to_store):
 
 
 def WRITE(WRITE_PARAMS):
-    # print 'write data to Murano'
+    # print "write data to Murano"
 
     http_body = WRITE_PARAMS
     # BUILD HTTP PACKET
@@ -189,16 +192,16 @@ def WRITE(WRITE_PARAMS):
 
     # HANDLE POSSIBLE RESPONSES
     if response.status == 204:
-        # print 'write success'
+        # print "write success"
         return True, 204
     elif response.status == 401:
-        print('401: Bad Auth, CIK may be bad')
+        print("401: Bad Auth, CIK may be bad")
         return False, 401
     elif response.status == 400:
-        print('400: Bad Request: check syntax')
+        print("400: Bad Request: check syntax")
         return False, 400
     elif response.status == 405:
-        print('405: Bad Method')
+        print("405: Bad Method")
         return False, 405
     else:
         print(str(response.status), response.reason, 'failed:')
@@ -207,14 +210,14 @@ def WRITE(WRITE_PARAMS):
     # This code is unreachable and should be removed
     # 		except Exception as err:
     # pass
-    # print('exeception: ' + str(err))
+    # print("exception: {}".format(str(err)))
 
 
     # return None
 
 def READ(READ_PARAMS):
     try:
-        # print('read data from Murano')
+        # print("read data from Murano")
 
         # BUILD HTTP PACKET
         http_packet = ""
@@ -229,30 +232,30 @@ def READ(READ_PARAMS):
 
         # HANDLE POSSIBLE RESPONSES
         if response.status == 200:
-            # print 'read success'
+            # print "read success"
             return True, response.read()
         elif response.status == 401:
-            print('401: Bad Auth, CIK may be bad')
+            print("401: Bad Auth, CIK may be bad")
             return False, 401
         elif response.status == 400:
-            print('400: Bad Request: check syntax')
+            print("400: Bad Request: check syntax")
             return False, 400
         elif response.status == 405:
-            print('405: Bad Method')
+            print("405: Bad Method")
             return False, 405
         else:
             print(str(response.status), response.reason, 'failed:')
             return False, response.status
 
-    except Exception as err:
+    except Exception as e:
         # pass
-        print('exeception: ' + str(err))
+        print("Exception: {}".format(e))
     return False, 'function exception'
 
 
 def LONG_POLL_WAIT(READ_PARAMS):
     try:
-        # print 'long poll state wait request from Murano'
+        # print "long poll state wait request from Murano"
         # BUILD HTTP PACKET
         http_packet = ""
         http_packet += 'GET /onep:v1/stack/alias?' + READ_PARAMS + ' HTTP/1.1\r\n'
@@ -268,7 +271,7 @@ def LONG_POLL_WAIT(READ_PARAMS):
 
         # HANDLE POSSIBLE RESPONSES
         if response.status == 200:
-            # print 'read success'
+            # print "read success"
             if response.getheader("last-modified") != None:
                 # Save Last-Modified Header (Plus 1s)
                 lm = response.getheader("last-modified")
@@ -276,24 +279,24 @@ def LONG_POLL_WAIT(READ_PARAMS):
                 last_modified[READ_PARAMS] = next_lm
             return True, response.read()
         elif response.status == 304:
-            # print '304: No Change'
+            # print "304: No Change"
             return False, 304
         elif response.status == 401:
-            print('401: Bad Auth, CIK may be bad')
+            print("401: Bad Auth, CIK may be bad")
             return False, 401
         elif response.status == 400:
-            print('400: Bad Request: check syntax')
+            print("400: Bad Request: check syntax")
             return False, 400
         elif response.status == 405:
-            print('405: Bad Method')
+            print("405: Bad Method")
             return False, 405
         else:
             print(str(response.status), response.reason)
             return False, response.status
 
-    except Exception as err:
+    except Exception as e:
         pass
-        print('exeception: ' + str(err))
+        print("Exception: {}".format(e))
     return False, 'function exception'
 
 
@@ -308,16 +311,16 @@ def LONG_POLL_WAIT(READ_PARAMS):
 
 # Check if CIK locally stored already
 if PROMPT_FOR_PRODUCTID_AND_SN is True or productid == UNSET_PRODUCT_ID:
-    print('Check for Device Parameters Enabled (hit return after each question)')
+    print("Check for Device Parameters Enabled (hit return after each question)")
     productid = input("Enter the Murano Product ID: ")
     host_address = productid + '.' + host_address_base
 
-    print('The Host Address is: ' + host_address)
+    print("The Host Address is: {}".format(host_address))
     # hostok = input("If OK, hit return, if you prefer a different host address, type it here: ")
     # if hostok != "":
     # 	host_address = hostok
 
-    print('The default Device Identity is: ' + identifier)
+    print("The default Device Identity is: {}".format(identifier))
     identityok = input("If OK, hit return, if you prefer a different Identity, type it here: ")
     if identityok != "":
         identifier = identityok
@@ -325,15 +328,15 @@ else:
     host_address = productid + '.' + host_address_base
 
 start_time = int(time.time())
-print('\r\n-----')
-print('Murano Example Smart Lightbulb Device Simulator booting...')
-print('Product Id: ' + productid)
-print('Device Identity: ' + identifier)
-print('Product Unique Host: ' + host_address)
-print('-----')
+print("\r\n-----")
+print("Murano Example Smart Lightbulb Device Simulator booting...")
+print("Product Id: {}".format(productid))
+print("Device Identity: {}".format(identifier))
+print("Product Unique Host: {}".format(host_address))
+print("-----")
 cik = GET_STORED_CIK()
 if cik in None:
-    print('try to activate')
+    print("try to activate")
     act_response = ACTIVATE()
     if act_response is not None:
         cik = act_response
@@ -345,7 +348,7 @@ if cik in None:
 # --------------------------
 # MAIN LOOP
 # --------------------------
-print('starting main loop')
+print("starting main loop")
 
 counter = 100  # for debug purposes so you don't have issues killing this process
 LOOP = True
@@ -357,15 +360,15 @@ status, resp = READ('state')
 if not status and resp == 401:
     FLAG_CHECK_ACTIVATION = True
 if not status and resp == 304:
-    # print('No New State Value')
+    # print("No New State Value")
     pass
 if status:
     new_value = resp.split('=')
     lightbulb_state = int(new_value[1])
     if lightbulb_state == 1:
-        print('Light Bulb is On')
+        print("Light Bulb is On")
     else:
-        print('Light Bulb is Off')
+        print("Light Bulb is Off")
 
 while LOOP:
     uptime = int(time.time()) - start_time
@@ -376,8 +379,8 @@ while LOOP:
         connection = "Not Connected"
 
     output_string = (
-    "Connection: {0:s}, Run Time: {1:5d}, Temperature: {2:3.1f} F, Humidity: {3:3.1f} %, Light State: {4:1d}").format(connection, uptime, temperature, humidity, lightbulb_state)
-    print(output_string)
+        "Connection: {0:s}, Run Time: {1:5d}, Temperature: {2:3.1f} F, Humidity: {3:3.1f} %, Light State: {4:1d}").format(connection, uptime, temperature, humidity, lightbulb_state)
+    print("{}".format(output_string))
 
     if cik is not None and FLAG_CHECK_ACTIVATION is True:
         # GENERATE RANDOM TEMPERATURE VALUE
@@ -398,43 +401,43 @@ while LOOP:
         if not status and resp == 401:
             FLAG_CHECK_ACTIVATION = True
 
-        # print('Look for on/off state change')
+        # print("Look for on/off state change")
         status, resp = LONG_POLL_WAIT('state')
         if not status and resp == 401:
             FLAG_CHECK_ACTIVATION = True
         if not status and resp == 304:
-            # print('No New State Value')
+            # print("No New State Value")
             pass
         if status:
-            # print('New State Value:' + str(resp))
+            # print("New State Value: {}".format(str(resp)))
             new_value = resp.split('=')
 
             if lightbulb_state != int(new_value[1]):
                 lightbulb_state = int(new_value[1])
                 if lightbulb_state == 1:
-                    print('Action -> Turn Light Bulb On')
+                    print("Action -> Turn Light Bulb On")
                 else:
-                    print('Action -> Turn Light Bulb Off')
+                    print("Action -> Turn Light Bulb Off")
 
     if FLAG_CHECK_ACTIVATION:
         if (uptime % 10) == 0:
-            # print('---')
-            print('Device CIK may be expired or not available (not added to product) - trying to activate')
+            # print("---")
+            print("Device CIK may be expired or not available (not added to product) - trying to activate")
         act_response = ACTIVATE()
         if act_response is not None:
             cik = act_response
             STORE_CIK(cik)
             FLAG_CHECK_ACTIVATION = False
         else:
-            # print('Wait 10 seconds and attempt to activate again')
+            # print("Wait 10 seconds and attempt to activate again")
             time.sleep(1)
 
     if AUTO_STOP & counter > 0:
         if (counter % 10) == 0:
-            print('auto stopping app loop in ~' + str(counter) + ' seconds')
+            print("auto stopping app loop in ~{} seconds".format(str(counter)))
         counter -= 1
 
     if AUTO_STOP & counter <= 0:
-        print('auto stopping this simulator application loop')
+        print("auto stopping this simulator application loop")
         LOOP = False
         break
