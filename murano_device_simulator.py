@@ -51,7 +51,6 @@ identifier = os.getenv('SIMULATOR_DEVICE_ID', '000001')  # default identifier
 
 SHOW_HTTP_REQUESTS = False
 PROMPT_FOR_PRODUCTID_AND_SN = os.getenv('SIMULATOR_SHOULD_PROMPT', '1') == '1'
-AUTO_STOP = True  # set to False to keep running indefinitely - this is a safety feature for new devs
 LONG_POLL_REQUEST_TIMEOUT = 2 * 1000  # in milliseconds
 
 # -----------------------------------------------------------------
@@ -132,7 +131,7 @@ def ACTIVATE():
 
         # HANDLE POSSIBLE RESPONSES
         if response.status == 200:
-            new_cik = response.read()
+            new_cik = response.read().decode("utf-8")
             print("Activation Response: New CIK: {} ..............................".format(new_cik[0:10]))
             return new_cik
         elif response.status == 409:
@@ -161,7 +160,7 @@ def GET_STORED_CIK():
         print("Stored cik: {} ..............................".format(local_cik[0:10]))
         return local_cik
     except Exception as e:
-        print("Problem getting stored CIK: {}".format(e))
+        print("Unable to read a stored CIK: {}".format(e))
         return None
 
 
@@ -233,7 +232,7 @@ def READ(READ_PARAMS):
         # HANDLE POSSIBLE RESPONSES
         if response.status == 200:
             # print "read success"
-            return True, response.read()
+            return True, response.read().decode('utf-8')
         elif response.status == 401:
             print("401: Bad Auth, CIK may be bad")
             return False, 401
@@ -335,7 +334,7 @@ print("Device Identity: {}".format(identifier))
 print("Product Unique Host: {}".format(host_address))
 print("-----")
 cik = GET_STORED_CIK()
-if cik in None:
+if cik is None:
     print("try to activate")
     act_response = ACTIVATE()
     if act_response is not None:
@@ -382,7 +381,7 @@ while LOOP:
         "Connection: {0:s}, Run Time: {1:5d}, Temperature: {2:3.1f} F, Humidity: {3:3.1f} %, Light State: {4:1d}").format(connection, uptime, temperature, humidity, lightbulb_state)
     print("{}".format(output_string))
 
-    if cik is not None and FLAG_CHECK_ACTIVATION is True:
+    if cik is not None and not FLAG_CHECK_ACTIVATION:
         # GENERATE RANDOM TEMPERATURE VALUE
 
         temperature = round(random.uniform(temperature - 0.2, temperature + 0.2), 1)
@@ -431,13 +430,3 @@ while LOOP:
         else:
             # print("Wait 10 seconds and attempt to activate again")
             time.sleep(1)
-
-    if AUTO_STOP & counter > 0:
-        if (counter % 10) == 0:
-            print("auto stopping app loop in ~{} seconds".format(str(counter)))
-        counter -= 1
-
-    if AUTO_STOP & counter <= 0:
-        print("auto stopping this simulator application loop")
-        LOOP = False
-        break
