@@ -146,8 +146,10 @@ def ACTIVATE():
             return None
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         # pass
-        print("Exception: {}".format(e))
+        # print("Exception: {}".format(e))
     return None
 
 
@@ -247,8 +249,10 @@ def READ(READ_PARAMS):
             return False, response.status
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         # pass
-        print("Exception: {}".format(e))
+        # print("Exception: {}".format(e))
     return False, 'function exception'
 
 
@@ -294,8 +298,10 @@ def LONG_POLL_WAIT(READ_PARAMS):
             return False, response.status
 
     except Exception as e:
-        pass
-        print("Exception: {}".format(e))
+        import traceback
+        traceback.print_exc()
+        # pass
+        # print("Exception: {}".format(e))
     return False, 'function exception'
 
 
@@ -312,7 +318,8 @@ def LONG_POLL_WAIT(READ_PARAMS):
 if PROMPT_FOR_PRODUCTID_AND_SN is True or productid == UNSET_PRODUCT_ID:
     print("Check for Device Parameters Enabled (hit return after each question)")
     productid = input("Enter the Murano Product ID: ")
-    host_address = productid + '.' + host_address_base
+    host_address = host_address_base
+    # host_address = productid + '.' + host_address_base
 
     print("The Host Address is: {}".format(host_address))
     # hostok = input("If OK, hit return, if you prefer a different host address, type it here: ")
