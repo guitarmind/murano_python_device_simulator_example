@@ -51,7 +51,8 @@ identifier = os.getenv('SIMULATOR_DEVICE_ID', '000001')  # default identifier
 
 SHOW_HTTP_REQUESTS = False
 PROMPT_FOR_PRODUCTID_AND_SN = os.getenv('SIMULATOR_SHOULD_PROMPT', '1') == '1'
-LONG_POLL_REQUEST_TIMEOUT = 2 * 1000  # in milliseconds
+LONG_POLL_REQUEST_TIMEOUT = 1 * 1000  # in milliseconds
+# LONG_POLL_REQUEST_TIMEOUT = 2 * 1000  # in milliseconds
 
 # -----------------------------------------------------------------
 # ---- SHOULD NOT NEED TO CHANGE ANYTHING BELOW THIS LINE ------
@@ -317,7 +318,8 @@ def LONG_POLL_WAIT(READ_PARAMS):
 # Check if CIK locally stored already
 if PROMPT_FOR_PRODUCTID_AND_SN is True or productid == UNSET_PRODUCT_ID:
     print("Check for Device Parameters Enabled (hit return after each question)")
-    productid = input("Enter the Murano Product ID: ")
+    # productid = input("Enter the Murano Product ID: ")
+    productid = "yax2y48xv5oh6w29"
     host_address = host_address_base
     # host_address = productid + '.' + host_address_base
 
@@ -376,6 +378,9 @@ if status:
     else:
         print("Light Bulb is Off")
 
+spike_interval_dps = 30
+prev_normal_temp = temperature
+counter = 0
 while LOOP:
     uptime = int(time.time()) - start_time
     last_request = time.time()
@@ -383,10 +388,6 @@ while LOOP:
     connection = 'Connected'
     if FLAG_CHECK_ACTIVATION:
         connection = "Not Connected"
-
-    output_string = (
-        "Connection: {0:s}, Run Time: {1:5d}, Temperature: {2:3.1f} F, Humidity: {3:3.1f} %, Light State: {4:1d}").format(connection, uptime, temperature, humidity, lightbulb_state)
-    print("{}".format(output_string))
 
     if cik is not None and not FLAG_CHECK_ACTIVATION:
         # GENERATE RANDOM TEMPERATURE VALUE
@@ -396,6 +397,13 @@ while LOOP:
             temperature = 120
         if temperature < 1:
             temperature = 1
+
+        # generate temperature spikes periodically
+        if counter > 0 and counter % spike_interval_dps == 0:
+            prev_normal_temp = temperature
+            temperature = round(random.uniform(temperature - 0.2, temperature + 0.2), 1) + \
+                round(random.uniform(30 - 5.5, 30 + 5.5), 1)
+
         # GENERATE RANDOM HUMIDITY VALUE
         humidity = round(random.uniform(humidity - 0.2, humidity + 0.2), 1)
         if humidity > 100:
@@ -406,6 +414,15 @@ while LOOP:
         status, resp = WRITE('temperature=' + str(temperature) + '&humidity=' + str(humidity) + '&uptime=' + str(uptime))
         if not status and resp == 401:
             FLAG_CHECK_ACTIVATION = True
+
+        output_string = (
+            "Connection: {0:s}, Run Time: {1:5d}, Temperature: {2:3.1f} F, Humidity: {3:3.1f} %, Light State: {4:1d}").format(connection, uptime, temperature, humidity, lightbulb_state)
+        print("{}".format(output_string))
+
+        # reset temperature bakc to normal
+        if counter > 0 and counter % spike_interval_dps == 0:
+            temperature = prev_normal_temp
+            print prev_normal_temp
 
         # print("Look for on/off state change")
         status, resp = LONG_POLL_WAIT('state')
@@ -436,4 +453,7 @@ while LOOP:
             FLAG_CHECK_ACTIVATION = False
         else:
             # print("Wait 10 seconds and attempt to activate again")
-            time.sleep(1)
+            # time.sleep(1)
+            time.sleep(0.5)
+
+    counter += 1
