@@ -382,6 +382,8 @@ if status:
 
 spike_interval_dps = 30
 prev_normal_temp = temperature
+big_curve_period = 120
+prev_normal_humid = humidity
 counter = 0
 while LOOP:
     uptime = int(time.time()) - start_time
@@ -394,9 +396,10 @@ while LOOP:
     if cik is not None and not FLAG_CHECK_ACTIVATION:
         # GENERATE RANDOM TEMPERATURE VALUE
 
-        temperature = round(random.uniform(temperature - 0.2, temperature + 0.2), 1)
-        if temperature > 120:
-            temperature = 120
+        temp_noise = round(random.uniform(0.5, 2.5))
+        temperature = round(random.uniform(temperature - temp_noise, temperature + temp_noise), 1)
+        if temperature > 130:
+            temperature = 130
         if temperature < 1:
             temperature = 1
 
@@ -409,18 +412,31 @@ while LOOP:
         # GENERATE RANDOM HUMIDITY VALUE
         humidity = round(random.uniform(humidity - 0.2, humidity + 0.2), 1)
         # Period of the wave in seconds
-        period = 50
+        period = 20
         # Amplitude of the wave
-        amplitude = 30
+        amplitude = 12
         # offset of the wave off of zero
         offset = 50
         radianPerSec = 2*math.pi/period
         radians = counter * radianPerSec
-        humidity = round(math.sin(radians)*amplitude + offset, 4)
+        humidity = round(math.sin(radians)*amplitude + offset, 4) + \
+            round(random.uniform(2.5, 10.5), 1)
         # humidity = humidity + round(math.sin(radians)*amplitude + offset, 4)
 
-        if humidity > 110:
-            humidity = 110
+        # generate bigger curve for humidity periodically
+        if counter > 0 and counter % big_curve_period == 0:
+            prev_normal_humid = humidity
+            jump_period = 45
+            radianPerSec = 2*math.pi/jump_period
+            radians = counter * (2*math.pi/radianPerSec)
+            curve_jump = 50 + round(random.uniform(2.5, 7.5))
+            big_curve_noise = round(random.uniform(1.5, 4.5))
+            humidity = round(math.sin(radians)*(amplitude + curve_jump) + offset + big_curve_noise, 4) + \
+                round(random.uniform(2.5, 10.5), 1)
+            print "big_curve_period occurred!"
+
+        if humidity > 120:
+            humidity = 120
         if humidity < 1:
             humidity = 1
 
@@ -432,10 +448,12 @@ while LOOP:
             "Connection: {0:s}, Run Time: {1:5d}, Temperature: {2:3.1f} F, Humidity: {3:3.1f} %, Light State: {4:1d}").format(connection, uptime, temperature, humidity, lightbulb_state)
         print("{}".format(output_string))
 
-        # reset temperature bakc to normal
+        # reset merics back to normal
         if counter > 0 and counter % spike_interval_dps == 0:
-            temperature = prev_normal_temp
-            print prev_normal_temp
+            temperature = prev_normal_temp - temp_noise
+            # print prev_normal_temp
+        if counter > 0 and counter % big_curve_period == 0:
+            humidity = prev_normal_humid
 
         # print("Look for on/off state change")
         status, resp = LONG_POLL_WAIT('state')
