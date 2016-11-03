@@ -26,6 +26,7 @@ import os
 import time
 import datetime
 import random
+import math
 
 import socket
 import ssl
@@ -319,7 +320,8 @@ def LONG_POLL_WAIT(READ_PARAMS):
 if PROMPT_FOR_PRODUCTID_AND_SN is True or productid == UNSET_PRODUCT_ID:
     print("Check for Device Parameters Enabled (hit return after each question)")
     # productid = input("Enter the Murano Product ID: ")
-    productid = "yax2y48xv5oh6w29"
+    # productid = "yax2y48xv5oh6w29"
+    productid = "t6kya3e26f3fecdi"
     host_address = host_address_base
     # host_address = productid + '.' + host_address_base
 
@@ -406,8 +408,19 @@ while LOOP:
 
         # GENERATE RANDOM HUMIDITY VALUE
         humidity = round(random.uniform(humidity - 0.2, humidity + 0.2), 1)
-        if humidity > 100:
-            humidity = 100
+        # Period of the wave in seconds
+        period = 50
+        # Amplitude of the wave
+        amplitude = 30
+        # offset of the wave off of zero
+        offset = 50
+        radianPerSec = 2*math.pi/period
+        radians = counter * radianPerSec
+        humidity = round(math.sin(radians)*amplitude + offset, 4)
+        # humidity = humidity + round(math.sin(radians)*amplitude + offset, 4)
+
+        if humidity > 110:
+            humidity = 110
         if humidity < 1:
             humidity = 1
 
