@@ -395,8 +395,7 @@ while LOOP:
 
     if cik is not None and not FLAG_CHECK_ACTIVATION:
         # GENERATE RANDOM TEMPERATURE VALUE
-
-        temp_noise = round(random.uniform(0.5, 2.5))
+        temp_noise = round(random.uniform(0.5, 1.5))
         temperature = round(random.uniform(temperature - temp_noise, temperature + temp_noise), 1)
         if temperature > 130:
             temperature = 130
@@ -424,16 +423,16 @@ while LOOP:
         # humidity = humidity + round(math.sin(radians)*amplitude + offset, 4)
 
         # generate bigger curve for humidity periodically
-        if counter > 0 and counter % big_curve_period == 0:
-            prev_normal_humid = humidity
-            jump_period = 45
-            radianPerSec = 2*math.pi/jump_period
-            radians = counter * (2*math.pi/radianPerSec)
-            curve_jump = 50 + round(random.uniform(2.5, 7.5))
-            big_curve_noise = round(random.uniform(1.5, 4.5))
-            humidity = round(math.sin(radians)*(amplitude + curve_jump) + offset + big_curve_noise, 4) + \
-                round(random.uniform(2.5, 10.5), 1)
-            print "big_curve_period occurred!"
+        # if counter > 0 and counter % big_curve_period == 0:
+        #     prev_normal_humid = humidity
+        #     jump_period = 45
+        #     radianPerSec = 2*math.pi/jump_period
+        #     radians = counter * (2*math.pi/radianPerSec)
+        #     curve_jump = 50 + round(random.uniform(2.5, 7.5))
+        #     big_curve_noise = round(random.uniform(1.5, 4.5))
+        #     humidity = round(math.sin(radians)*(amplitude + curve_jump) + offset + big_curve_noise, 4) + \
+        #         round(random.uniform(2.5, 10.5), 1)
+        #     print "big_curve_period occurred!"
 
         if humidity > 120:
             humidity = 120
@@ -450,10 +449,10 @@ while LOOP:
 
         # reset merics back to normal
         if counter > 0 and counter % spike_interval_dps == 0:
-            temperature = prev_normal_temp - temp_noise
+            temperature = prev_normal_temp
             # print prev_normal_temp
-        if counter > 0 and counter % big_curve_period == 0:
-            humidity = prev_normal_humid
+        # if counter > 0 and counter % big_curve_period == 0:
+        #     humidity = prev_normal_humid
 
         # print("Look for on/off state change")
         status, resp = LONG_POLL_WAIT('state')
