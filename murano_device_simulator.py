@@ -330,10 +330,11 @@ if PROMPT_FOR_PRODUCTID_AND_SN is True or productid == UNSET_PRODUCT_ID:
     # if hostok != "":
     # 	host_address = hostok
 
-    print("The default Device Identity is: {}".format(identifier))
-    identityok = input("If OK, hit return, if you prefer a different Identity, type it here: ")
-    if identityok != "":
-        identifier = identityok
+    # print("The default Device Identity is: {}".format(identifier))
+    # identityok = input("If OK, hit return, if you prefer a different Identity, type it here: ")
+    # if identityok != "":
+        # identifier = identityok
+    identifier = "000001"
 else:
     host_address = productid + '.' + host_address_base
 
